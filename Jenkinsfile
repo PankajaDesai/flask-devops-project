@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKERHUB_IMAGE = "pankajadesai7/flask-devops-app"
+    }
+
     stages {
         stage('Clone Code') {
             steps {
@@ -8,16 +12,27 @@ pipeline {
             }
         }
 
-	stage('Install Requirements') {
+        stage('Install Requirements') {
             steps {
                 sh 'pip install --break-system-packages -r app/requirements.txt'
             }
         }
 
-
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t flask-devops-app ./app'
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                        docker tag flask-devops-app $DOCKERHUB_IMAGE
+                        docker push $DOCKERHUB_IMAGE
+                    '''
+                }
             }
         }
 
@@ -28,3 +43,4 @@ pipeline {
         }
     }
 }
+
