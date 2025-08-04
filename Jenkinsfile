@@ -8,11 +8,12 @@ pipeline {
             }
         }
 
-        stage('Install Requirements') {
+	stage('Install Requirements') {
             steps {
-                sh 'pip install -r app/requirements.txt'
+                sh 'pip install --break-system-packages -r app/requirements.txt'
             }
         }
+
 
         stage('Build Docker Image') {
             steps {
